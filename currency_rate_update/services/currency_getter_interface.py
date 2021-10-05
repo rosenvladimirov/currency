@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 import logging
+import requests
 
 from datetime import datetime
 from odoo import fields, _
@@ -93,6 +94,7 @@ class CurrencyGetterInterface(object, metaclass=CurrencyGetterType):
     # attributes required for currency getters
     code = None  # code for service selection
     name = None  # displayed name
+    in_field = None # Put in rate field
 
     log_info = " "
 
@@ -149,9 +151,18 @@ class CurrencyGetterInterface(object, metaclass=CurrencyGetterType):
             raise UserError(
                 _('Web Service does not exist (%s)!') % url)
 
+    def get_url_with_params(self, url, params):
+        try:
+            r = requests.get(url, params=params)
+            return r.content
+        except IOError:
+            raise UserError(
+                _('Web Service does not exist (%s)!') % url)
+
     def check_rate_date(self, rate_date, max_delta_days):
         """Check date constrains. rate_date must be of datetime type"""
         days_delta = (datetime.today() - rate_date).days
+        _logger.info("DATE %s > %s" % (days_delta, max_delta_days))
         if days_delta > max_delta_days:
             raise Exception(
                 'The rate timestamp %s is %d days away from today, '

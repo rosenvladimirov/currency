@@ -17,6 +17,8 @@ class ECBGetter(CurrencyGetterInterface):
     """
     code = 'ECB'
     name = 'European Central Bank'
+    in_field = 'rate'
+
     supported_currency_array = [
         "AUD", "BGN", "BRL", "CAD", "CHF", "CNY", "CZK", "DKK", "EUR", "GBP",
         "HKD", "HRK", "HUF", "IDR", "ILS", "INR", "JPY", "KRW", "LTL", "MXN",
