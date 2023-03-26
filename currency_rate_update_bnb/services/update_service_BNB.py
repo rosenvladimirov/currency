@@ -9,6 +9,7 @@ from datetime import datetime
 from lxml import etree
 
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -29,18 +30,44 @@ class BNBGetter(CurrencyGetterInterface):
     def rate_retrieve(self, dom):
         """Parse a dom node to retrieve-
         currencies data
-
         """
         res = {'EUR': {'rate_currency': 1.95583, 'inverted': 1.95583, 'direct': 0.511292}}
-        curr_rate = dom.xpath("//ROW/REVERSERATE")
-        direct_rate = dom.xpath("//ROW/RATE")
-        gold = dom.xpath("//ROW/GOLD")
-        for item, curr_name in enumerate(dom.xpath("//ROW/CODE")):
-            if gold[item].text == '1':
-                _logger.debug("CURRENCY %s::%s::%s" % (curr_name.text, float(curr_rate[item].text), float(direct_rate[item].text)))
-                res[curr_name.text] = {'rate_currency': float(curr_rate[item].text),
-                                       'inverted': float(direct_rate[item].text),
-                                       'direct': float(curr_rate[item].text)}
+        # curr_rate = dom.xpath("//ROW/REVERSERATE")
+        # direct_rate = dom.xpath("//ROW/RATE")
+        # gold = dom.xpath("//ROW/GOLD")
+        rows = []
+        for curr_name in dom.xpath("//ROW"):
+            rows.append({
+                'GOLD': -1,
+                'NAME_': None,
+                'CODE': None,
+                'RATIO': 1.0,
+                'REVERSERATE': 0.0,
+                'RATE': 0.0,
+                'EXTRAINFO': None,
+                'CURR_DATE': None,
+                'TITLE': None,
+                'F_STAR': None,
+            })
+            for el in curr_name.iter():
+                rows[-1][el.tag] = el.text
+        for line in rows:
+            if line['GOLD'] == 0:
+                continue
+            if line['GOLD'] == "1" and line['F_STAR'] != 1:
+                res[line['CODE']] = {'rate_currency': float(line['REVERSERATE'])*float(line['RATIO']),
+                                     'inverted': float(line['RATE'])/float(line['RATIO']),
+                                     'direct': float(line['REVERSERATE'])*float(line['RATIO'])}
+        # for item, curr_name in enumerate(dom.xpath("//ROW/CODE")):
+        #     _logger.debug("CURRENCY %s Line %s" % (item, curr_name.text))
+        #     try:
+        #         if gold[item].text == '1':
+        #             _logger.debug("CURRENCY %s::%s::%s" % (curr_name.text, float(curr_rate[item].text), float(direct_rate[item].text)))
+        #             res[curr_name.text] = {'rate_currency': float(curr_rate[item].text),
+        #                                    'inverted': float(direct_rate[item].text),
+        #                                    'direct': float(curr_rate[item].text)}
+        #     except ValueError:
+        #         continue
         return res
 
     def get_updated_currency(self, currency_array, main_currency,
@@ -49,7 +76,7 @@ class BNBGetter(CurrencyGetterInterface):
         _logger.info("Bulgarian National Bank")
         self.validate_cur(main_currency)
         if main_currency != 'BGN':
-                raise Exception('Could not update different currency %s'%(main_currency))
+            raise Exception('Could not update different currency %s' % (main_currency))
         url = 'https://www.bnb.bg/Statistics/StExternalSector/StExchangeRates/StERForeignCurrencies/index.htm'
         params = {'download': 'xml'}
 
@@ -74,7 +101,7 @@ class BNBGetter(CurrencyGetterInterface):
             if gold[item].text == '1':
                 self.supported_currency_array.append(curr_name.text)
         _logger.info("Supported currencies = %s " %
-                      self.supported_currency_array)
+                     self.supported_currency_array)
         curr_data = self.rate_retrieve(dom)
         _logger.info("Returned currency rate %s" % curr_data)
         for curr in currency_array:
