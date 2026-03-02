@@ -8,7 +8,7 @@
     "summary": "Allows to download central currency exchange rates from BNB (CE)",
     "author": "Rosen Vladimirov," "Odoo Community Association (OCA),",
     "website": "https://github.com/OCA/l10n-bulgaria",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "depends": [
         "currency_rate_update",
     ],

@@ -8,7 +8,7 @@
     "version": "18.0.1.0.1",
     "author": "Camptocamp, CorporateHub, Odoo Community Association (OCA)",
     "website": "https://github.com/OCA/currency",
-    "license": "AGPL-3",
+    "license": "LGPL-3",
     "category": "Financial Management/Configuration",
     "summary": "Update exchange rates using OCA modules",
     "depends": ["base", "mail", "account"],
